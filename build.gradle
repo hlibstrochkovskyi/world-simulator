@@ -4,6 +4,7 @@ plugins {
     id 'org.openjfx.javafxplugin' version '0.1.0'
 }
 
+//set project metadata
 group = 'org.example'
 version = '1.0-SNAPSHOT'
 
