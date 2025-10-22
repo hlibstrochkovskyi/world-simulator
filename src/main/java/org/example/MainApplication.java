@@ -109,22 +109,24 @@ public class MainApplication extends Application {
         Label layerLabel = new Label("Layer:");
         layerGroup = new ToggleGroup();
 
+
         RadioButton terrainBtn = new RadioButton("Terrain");
         terrainBtn.setToggleGroup(layerGroup);
         terrainBtn.setSelected(true);
-        terrainBtn.setOnAction(e -> renderMap());
+        terrainBtn.setOnAction(e -> onLayerChange());
 
         RadioButton biomeBtn = new RadioButton("Biomes");
         biomeBtn.setToggleGroup(layerGroup);
-        biomeBtn.setOnAction(e -> renderMap());
+        biomeBtn.setOnAction(e -> onLayerChange());
 
         RadioButton tempBtn = new RadioButton("Temperature");
         tempBtn.setToggleGroup(layerGroup);
-        tempBtn.setOnAction(e -> renderMap());
+        tempBtn.setOnAction(e -> onLayerChange());
 
         RadioButton humidBtn = new RadioButton("Humidity");
         humidBtn.setToggleGroup(layerGroup);
-        humidBtn.setOnAction(e -> renderMap());
+        humidBtn.setOnAction(e -> onLayerChange());
+
 
         Separator sep1 = new Separator();
         sep1.setOrientation(javafx.geometry.Orientation.VERTICAL);
@@ -240,6 +242,17 @@ public class MainApplication extends Application {
         updateGlobeTexture();
     }
 
+
+    /**
+     * Called when the layer selection changes.
+     * Redraws both the 2D map and the 3D globe.
+     */
+    private void onLayerChange() {
+        renderMap();
+        updateGlobeTexture();
+    }
+
+
     private void renderMap() {
         GraphicsContext gc = mapCanvas.getGraphicsContext2D();
         double w = mapCanvas.getWidth();
@@ -272,9 +285,20 @@ public class MainApplication extends Application {
     private void updateGlobeTexture() {
         WritableImage texture = new WritableImage(world.size, world.size);
 
+        RadioButton selected = (RadioButton) layerGroup.getSelectedToggle();
+        String layer = selected.getText();
+
         for (int y = 0; y < world.size; y++) {
             for (int x = 0; x < world.size; x++) {
-                Color color = getBiomeColor(world.biomes[x][y]);
+
+                Color color = switch (layer) {
+                    case "Terrain" -> getTerrainColor(world.elevation[x][y], world.seaLevel);
+                    case "Biomes" -> getBiomeColor(world.biomes[x][y]);
+                    case "Temperature" -> getTemperatureColor(world.temperature[x][y]);
+                    case "Humidity" -> getHumidityColor(world.humidity[x][y]);
+                    default -> Color.BLACK;
+                };
+
                 texture.getPixelWriter().setColor(x, y, color);
             }
         }
