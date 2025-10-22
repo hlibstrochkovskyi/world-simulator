@@ -162,7 +162,7 @@ public class MainApplication extends Application {
     private Parent create3DGlobe() {
         Group root3D = new Group();
 
-        globe = new Sphere(250);
+        globe = new Sphere(150);
         globe.getTransforms().addAll(rotateX, rotateY);
 
         PhongMaterial material = new PhongMaterial();
@@ -201,6 +201,10 @@ public class MainApplication extends Application {
         globeScene = subScene;
 
         StackPane container = new StackPane(subScene);
+
+        subScene.widthProperty().bind(container.widthProperty());
+        subScene.heightProperty().bind(container.heightProperty());
+
         return container;
     }
 
