@@ -5,14 +5,18 @@ import java.util.Random;
 class World {
     int size;
     double seaLevel;
+    double worldScale;
+    int worldOctaves;
     double[][] elevation;
     double[][] temperature;
     double[][] humidity;
     Biome[][] biomes;
 
-    public World(int size, double seaLevel) {
+    public World(int size, double seaLevel, double worldScale, int worldOctaves) {
         this.size = size;
         this.seaLevel = seaLevel;
+        this.worldScale = worldScale;
+        this.worldOctaves = worldOctaves;
         this.elevation = new double[size][size];
         this.temperature = new double[size][size];
         this.humidity = new double[size][size];
@@ -31,7 +35,7 @@ class World {
         double maxValue;
 
         // --- 1. Generate Elevation ---
-        baseFrequency = 2.0; // Base frequency (how many continents)
+        baseFrequency = this.worldScale;
         for (int y = 0; y < size; y++) {
             for (int x = 0; x < size; x++) {
 
@@ -55,7 +59,7 @@ class World {
                 amplitude = 1.0;
                 maxValue = 0;
 
-                for (int i = 0; i < 5; i++) { // 5 octaves
+                for (int i = 0; i < this.worldOctaves; i++) { // 5 octaves
                     double freq = Math.pow(2, i) * baseFrequency;
                     e += amplitude * elevationNoise.noise(
                             x_coord * freq,

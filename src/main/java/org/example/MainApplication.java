@@ -29,6 +29,8 @@ public class MainApplication extends Application {
     private ToggleGroup layerGroup;
     private Label tooltipLabel;
     private Slider seaLevelSlider;
+    private Slider worldScaleSlider;
+    private Slider worldDetailSlider;
     private Slider worldSizeSlider;
     private TabPane tabPane;
 
@@ -42,7 +44,7 @@ public class MainApplication extends Application {
         primaryStage.setTitle("World Simulator");
 
         // Initialize world with default settings
-        world = new World(512, 0.5);
+        world = new World(512, 0.5, 2.0, 5);
 
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(10));
@@ -134,8 +136,10 @@ public class MainApplication extends Application {
         Separator sep2 = new Separator();
         sep2.setOrientation(javafx.geometry.Orientation.VERTICAL);
 
-        // Sliders
+        /// Sliders
         VBox sliderBox = new VBox(5);
+
+        // --- World Size Slider ---
         Label sizeLabel = new Label("World Size: 512");
         worldSizeSlider = new Slider(256, 1024, 512);
         worldSizeSlider.setShowTickLabels(false);
@@ -144,14 +148,39 @@ public class MainApplication extends Application {
         worldSizeSlider.valueProperty().addListener((obs, old, val) ->
                 sizeLabel.setText("World Size: " + val.intValue()));
 
+        // --- Sea Level Slider ---
         Label seaLabel = new Label("Sea Level: 0.50");
-        seaLevelSlider = new Slider(0, 0.7, 0.5);
+        seaLevelSlider = new Slider(0.3, 0.7, 0.5);
         seaLevelSlider.setShowTickLabels(false);
         seaLevelSlider.setShowTickMarks(true);
         seaLevelSlider.valueProperty().addListener((obs, old, val) ->
                 seaLabel.setText(String.format("Sea Level: %.2f", val.doubleValue())));
 
-        sliderBox.getChildren().addAll(sizeLabel, worldSizeSlider, seaLabel, seaLevelSlider);
+        // --- (NEW) World Scale Slider ---
+        Label scaleLabel = new Label("World Scale: 2.0");
+        worldScaleSlider = new Slider(0.5, 5.0, 2.0); // 0.5 = big continents, 5.0 = many islands
+        worldScaleSlider.setShowTickLabels(false);
+        worldScaleSlider.setShowTickMarks(true);
+        worldScaleSlider.valueProperty().addListener((obs, old, val) ->
+                scaleLabel.setText(String.format("World Scale: %.1f", val.doubleValue())));
+
+        // --- (NEW) World Detail Slider ---
+        Label detailLabel = new Label("Detail Level: 5");
+        worldDetailSlider = new Slider(1, 8, 5); // 1 = smooth, 8 = detailed
+        worldDetailSlider.setBlockIncrement(1);
+        worldDetailSlider.setMajorTickUnit(1);
+        worldDetailSlider.setMinorTickCount(0);
+        worldDetailSlider.setSnapToTicks(true); // Only allow whole numbers
+        worldDetailSlider.valueProperty().addListener((obs, old, val) ->
+                detailLabel.setText("Detail Level: " + val.intValue()));
+
+        // --- Add ALL sliders to the box ---
+        sliderBox.getChildren().addAll(
+                sizeLabel, worldSizeSlider,
+                seaLabel, seaLevelSlider,
+                scaleLabel, worldScaleSlider,
+                detailLabel, worldDetailSlider
+        );
 
         controlPanel.getChildren().addAll(
                 generateBtn, saveBtn, sep1, layerLabel,
@@ -234,8 +263,11 @@ public class MainApplication extends Application {
     private void generateWorld() {
         int size = (int)worldSizeSlider.getValue();
         double seaLevel = seaLevelSlider.getValue();
+        double scale = worldScaleSlider.getValue();
+        int octaves = (int)worldDetailSlider.getValue();
 
-        world = new World(size, seaLevel);
+
+        world = new World(size, seaLevel, scale, octaves);
         world.generate();
 
         renderMap();
