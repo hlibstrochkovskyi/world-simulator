@@ -1,10 +1,9 @@
 plugins {
     id 'java'
-    id 'application'
-    id 'org.openjfx.javafxplugin' version '0.1.0'
+    id 'application' // Plugin for running the application
+    id 'org.openjfx.javafxplugin' version '0.1.0' // Plugin for JavaFX
 }
 
-//set project metadata
 group = 'org.example'
 version = '1.0-SNAPSHOT'
 
@@ -12,16 +11,18 @@ repositories {
     mavenCentral()
 }
 
-
+// Configure JavaFX
+// Configure JavaFX
 javafx {
-    version = "17.0.10"
-    modules = [ 'javafx.controls', 'javafx.swing' ]
+    version = "17.0.10" // Use JavaFX 17 (compatible with JDK 17)
+    modules = [ 'javafx.controls', 'javafx.swing', 'javafx.graphics' ]
     // javafx.controls - for buttons, sliders, and the 2D Canvas
     // javafx.swing - for SwingFXUtils (helps with saving images)
-    // We will add 'javafx.graphics' later for 3D
+    // javafx.graphics - for the 3D Globe (Sphere, SubScene, etc.)
 }
 
 dependencies {
+    // Test dependencies (were already here)
     testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }
