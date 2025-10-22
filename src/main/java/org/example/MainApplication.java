@@ -81,7 +81,7 @@ public class MainApplication extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        // Generate initial world
+        // Generate initial worldd
         generateWorld();
 
         // Auto-rotation animation
