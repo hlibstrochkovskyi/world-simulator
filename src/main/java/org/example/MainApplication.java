@@ -221,8 +221,8 @@ public class MainApplication extends Application {
         subScene.setOnMouseDragged(event -> {
             double dx = event.getSceneX() - mouseX;
             double dy = event.getSceneY() - mouseY;
-            rotateY.setAngle(rotateY.getAngle() + dx * 0.5);
-            rotateX.setAngle(rotateX.getAngle() - dy * 0.5);
+            rotateY.setAngle(rotateY.getAngle() - dx * 0.5);
+            rotateX.setAngle(rotateX.getAngle() + dy * 0.5);
             mouseX = event.getSceneX();
             mouseY = event.getSceneY();
         });
