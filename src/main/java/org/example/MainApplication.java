@@ -56,7 +56,7 @@ public class MainApplication extends Application {
         // 2D Map tab
         Tab mapTab = new Tab("2D Map");
         mapTab.setClosable(false);
-        mapCanvas = new Canvas(800, 600);
+        mapCanvas = new Canvas(1000, 600);
         setupMapInteraction();
         StackPane mapPane = new StackPane(mapCanvas);
         mapTab.setContent(mapPane);
@@ -87,7 +87,7 @@ public class MainApplication extends Application {
             @Override
             public void handle(long now) {
                 if (autoRotate && tabPane.getSelectionModel().getSelectedIndex() == 1) {
-                    rotateY.setAngle(rotateY.getAngle() + 0.2);
+                    rotateY.setAngle(rotateY.getAngle() + 0.04);
                 }
             }
         };
@@ -143,7 +143,7 @@ public class MainApplication extends Application {
                 sizeLabel.setText("World Size: " + val.intValue()));
 
         Label seaLabel = new Label("Sea Level: 0.50");
-        seaLevelSlider = new Slider(0.3, 0.7, 0.5);
+        seaLevelSlider = new Slider(0, 0.7, 0.5);
         seaLevelSlider.setShowTickLabels(false);
         seaLevelSlider.setShowTickMarks(true);
         seaLevelSlider.valueProperty().addListener((obs, old, val) ->
@@ -218,7 +218,7 @@ public class MainApplication extends Application {
                 String biome = world.biomes[x][y].toString();
 
                 tooltipLabel.setText(String.format(
-                        "Lat: %.1f°, Lon: %.1f° | Elevation: %.2f | Temp: %.1f°C | Humidity: %.0f%% | Biome: %s",
+                        "Lat: %.1f\u00B0, Lon: %.1f\u00B0 | Elevation: %.2f | Temp: %.1f\u00B0C | Humidity: %.0f%% | Biome: %s",
                         lat, lon, elevation, temp, humid * 100, biome
                 ));
             }
