@@ -19,6 +19,7 @@ import javafx.embed.swing.SwingFXUtils;
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.util.Random;
+import javafx.scene.Cursor;
 
 public class MainApplication extends Application {
 
@@ -211,11 +212,13 @@ public class MainApplication extends Application {
         subScene.setFill(Color.BLACK);
         subScene.setCamera(camera);
 
-        // Mouse interaction
+        subScene.setCursor(Cursor.OPEN_HAND);
+
         subScene.setOnMousePressed(event -> {
             mouseX = event.getSceneX();
             mouseY = event.getSceneY();
             autoRotate = false;
+            subScene.setCursor(Cursor.CLOSED_HAND);
         });
 
         subScene.setOnMouseDragged(event -> {
@@ -227,12 +230,18 @@ public class MainApplication extends Application {
             mouseY = event.getSceneY();
         });
 
-        subScene.setOnMouseReleased(event -> autoRotate = true);
+        subScene.setOnMouseReleased(event -> {
+            autoRotate = true;
+            subScene.setCursor(Cursor.OPEN_HAND);
+        });
+
+        subScene.setOnMouseExited(event -> {
+            subScene.setCursor(Cursor.DEFAULT);
+        });
 
         globeScene = subScene;
 
         StackPane container = new StackPane(subScene);
-
         subScene.widthProperty().bind(container.widthProperty());
         subScene.heightProperty().bind(container.heightProperty());
 
