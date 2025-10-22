@@ -1,6 +1,8 @@
 package org.example;
 
 import java.util.Random;
+import java.util.PriorityQueue;
+import javafx.scene.paint.Color;
 
 class World {
     int size;
@@ -11,6 +13,8 @@ class World {
     double[][] temperature;
     double[][] humidity;
     Biome[][] biomes;
+    int[][] stateID; // Stores the ID (1, 2, 3...) of the state owning this cell
+    Color[] stateColors; // Stores a random color for each state ID
 
     public World(int size, double seaLevel, double worldScale, int worldOctaves) {
         this.size = size;
@@ -21,9 +25,32 @@ class World {
         this.temperature = new double[size][size];
         this.humidity = new double[size][size];
         this.biomes = new Biome[size][size];
+        this.stateID = new int[size][size];
     }
 
-    public void generate() {
+
+    /**
+     * Helper class for the state generation algorithm (Dijkstra's)
+     * Implements Comparable to be used in a PriorityQueue.
+     */
+    private static class StateCell implements Comparable<StateCell> {
+        int x, y, ownerID;
+        double cost;
+
+        public StateCell(int x, int y, int ownerID, double cost) {
+            this.x = x;
+            this.y = y;
+            this.ownerID = ownerID;
+            this.cost = cost;
+        }
+
+        @Override
+        public int compareTo(StateCell other) {
+            return Double.compare(this.cost, other.cost);
+        }
+    }
+
+    public void generate(boolean generateStates) {
         Random rand = new Random();
         SimplexNoise elevationNoise = new SimplexNoise(rand.nextLong());
         SimplexNoise tempNoise = new SimplexNoise(rand.nextLong());
@@ -145,13 +172,106 @@ class World {
             }
         }
 
-        // --- 4. Determine Biomes (no changes) ---
+        // --- 4. Determine Biomes  ---
         for (int y = 0; y < size; y++) {
             for (int x = 0; x < size; x++) {
                 biomes[x][y] = determineBiome(elevation[x][y], temperature[x][y], humidity[x][y]);
             }
         }
+
+
+        // --- 5. Generate States (if requested) ---
+        if (generateStates) {
+            runStateGeneration();
+        } else {
+            // Clear any old state data
+            this.stateID = new int[size][size];
+        }
+
     }
+
+
+    private void runStateGeneration() {
+        int numStates = 50; // How many states to create
+        Random rand = new Random();
+
+        // 1. Initialize data structures
+        this.stateID = new int[size][size];
+        this.stateColors = new Color[numStates + 1]; // +1 because IDs start at 1
+        this.stateColors[0] = Color.TRANSPARENT; // ID 0 is "ocean/unclaimed"
+
+        double[][] totalCost = new double[size][size];
+        for (int y = 0; y < size; y++) {
+            for (int x = 0; x < size; x++) {
+                totalCost[y][x] = Double.MAX_VALUE;
+            }
+        }
+
+        PriorityQueue<StateCell> queue = new PriorityQueue<>();
+
+        // 2. Select Seeds (Capitals)
+        for (int i = 1; i <= numStates; i++) {
+            int x, y;
+            // Find a random spot on land
+            do {
+                x = rand.nextInt(size);
+                y = rand.nextInt(size);
+            } while (elevation[x][y] < seaLevel);
+
+            this.stateID[x][y] = i; // Claim this cell
+            this.stateColors[i] = Color.rgb(rand.nextInt(200) + 55, rand.nextInt(200) + 55, rand.nextInt(200) + 55);
+            totalCost[x][y] = 0;
+            queue.add(new StateCell(x, y, i, 0));
+        }
+
+        // 3. Run Multi-Source Dijkstra (The Growth)
+        int[] dx = {0, 0, 1, -1}; // 4-way neighbors
+        int[] dy = {1, -1, 0, 0};
+
+        while (!queue.isEmpty()) {
+            StateCell current = queue.poll();
+
+            // If this cell has already been processed with a lower cost, skip it
+            if (current.cost > totalCost[current.x][current.y]) {
+                continue;
+            }
+
+            for (int i = 0; i < 4; i++) {
+                int nx = current.x + dx[i];
+                int ny = current.y + dy[i];
+
+                // Handle Y bounds (no wrapping)
+                if (ny < 0 || ny >= size) continue;
+
+                // Handle X wrapping (seamless map)
+                nx = (nx + size) % size;
+
+                // --- (NEW) Check if the neighbor is ocean. If so, stop. ---
+                if (elevation[nx][ny] < seaLevel) {
+                    continue; // Cannot expand into the ocean
+                }
+
+                // --- This is our simplified Cost Logic ---
+                double moveCost;
+                // (We already know it's not ocean, so we can remove that check)
+                if (elevation[nx][ny] > 0.75) {
+                    moveCost = 10.0; // Mountains are expensive
+                } else {
+                    moveCost = 1.0;  // Plains are cheap
+                }
+                // ---
+
+                double newCost = current.cost + moveCost;
+
+                if (newCost < totalCost[nx][ny]) {
+                    totalCost[nx][ny] = newCost;
+                    this.stateID[nx][ny] = current.ownerID;
+                    queue.add(new StateCell(nx, ny, current.ownerID, newCost));
+                }
+            }
+        }
+    }
+
 
     private Biome determineBiome(double elev, double temp, double humid) {
         if (elev < seaLevel) return Biome.OCEAN;
@@ -173,4 +293,9 @@ class World {
             return Biome.DESERT;
         }
     }
+
+
+
+
+
 }

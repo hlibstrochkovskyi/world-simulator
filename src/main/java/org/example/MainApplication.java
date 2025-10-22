@@ -31,6 +31,7 @@ public class MainApplication extends Application {
     private Label tooltipLabel;
     private Slider seaLevelSlider;
     private Slider worldScaleSlider;
+    private CheckBox statesCheckBox;
     private Slider worldDetailSlider;
     private Slider worldSizeSlider;
     private TabPane tabPane;
@@ -82,7 +83,7 @@ public class MainApplication extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        // Generate initial worldd
+        // Generate initial world
         generateWorld();
 
         // Auto-rotation animation
@@ -104,6 +105,9 @@ public class MainApplication extends Application {
 
         Button generateBtn = new Button("Generate World");
         generateBtn.setOnAction(e -> generateWorld());
+
+        statesCheckBox = new CheckBox("Generate States");
+        statesCheckBox.setSelected(false); // Default is OFF
 
         Button saveBtn = new Button("Save Image");
         saveBtn.setOnAction(e -> saveImage());
@@ -129,6 +133,10 @@ public class MainApplication extends Application {
         RadioButton humidBtn = new RadioButton("Humidity");
         humidBtn.setToggleGroup(layerGroup);
         humidBtn.setOnAction(e -> onLayerChange());
+
+        RadioButton statesBtn = new RadioButton("States");
+        statesBtn.setToggleGroup(layerGroup);
+        statesBtn.setOnAction(e -> onLayerChange());
 
 
         Separator sep1 = new Separator();
@@ -184,10 +192,10 @@ public class MainApplication extends Application {
         );
 
         controlPanel.getChildren().addAll(
-                generateBtn, saveBtn, sep1, layerLabel,
-                terrainBtn, biomeBtn, tempBtn, humidBtn, sep2, sliderBox
+                generateBtn, statesCheckBox, saveBtn, sep1, layerLabel,
+                terrainBtn, biomeBtn, tempBtn, humidBtn, statesBtn,
+                sep2, sliderBox
         );
-
         return controlPanel;
     }
 
@@ -274,10 +282,10 @@ public class MainApplication extends Application {
         double seaLevel = seaLevelSlider.getValue();
         double scale = worldScaleSlider.getValue();
         int octaves = (int)worldDetailSlider.getValue();
-
+        boolean generateStates = statesCheckBox.isSelected();
 
         world = new World(size, seaLevel, scale, octaves);
-        world.generate();
+        world.generate(generateStates);
 
         renderMap();
         updateGlobeTexture();
@@ -309,6 +317,40 @@ public class MainApplication extends Application {
                     case "Biomes" -> getBiomeColor(world.biomes[x][y]);
                     case "Temperature" -> getTemperatureColor(world.temperature[x][y]);
                     case "Humidity" -> getHumidityColor(world.humidity[x][y]);
+                    case "States" -> {
+                        if (world.elevation[x][y] < world.seaLevel) {
+                            yield getTerrainColor(world.elevation[x][y], world.seaLevel);
+                        }
+
+                        int owner = world.stateID[x][y];
+                        if (owner == 0) {
+                            yield getTerrainColor(world.elevation[x][y], world.seaLevel);
+                        }
+
+                        boolean isBorder = false;
+                        int[] dx = {0, 0, 1, -1};
+                        int[] dy = {1, -1, 0, 0};
+
+                        for (int i = 0; i < 4; i++) {
+                            int nx = (x + dx[i] + world.size) % world.size;
+                            int ny = y + dy[i];
+                            if (ny < 0 || ny >= world.size) continue;
+
+                            if (world.elevation[nx][ny] < world.seaLevel) {
+                                isBorder = true; // Border with the ocean
+                                break;
+                            }
+
+                            int neighborOwner = world.stateID[nx][ny];
+                            if (neighborOwner != 0 && neighborOwner != owner) {
+                                isBorder = true; // Border with another state
+                                break;
+                            }
+                        }
+
+                        yield isBorder ? Color.BLACK : world.stateColors[owner];
+                    }
+
                     default -> Color.BLACK;
                 };
 
@@ -337,6 +379,40 @@ public class MainApplication extends Application {
                     case "Biomes" -> getBiomeColor(world.biomes[x][y]);
                     case "Temperature" -> getTemperatureColor(world.temperature[x][y]);
                     case "Humidity" -> getHumidityColor(world.humidity[x][y]);
+                    case "States" -> {
+                        if (world.elevation[x][y] < world.seaLevel) {
+                            yield getTerrainColor(world.elevation[x][y], world.seaLevel);
+                        }
+
+                        int owner = world.stateID[x][y];
+                        if (owner == 0) {
+                            yield getTerrainColor(world.elevation[x][y], world.seaLevel);
+                        }
+
+                        boolean isBorder = false;
+                        int[] dx = {0, 0, 1, -1};
+                        int[] dy = {1, -1, 0, 0};
+
+                        for (int i = 0; i < 4; i++) {
+                            int nx = (x + dx[i] + world.size) % world.size;
+                            int ny = y + dy[i];
+                            if (ny < 0 || ny >= world.size) continue;
+
+                            if (world.elevation[nx][ny] < world.seaLevel) {
+                                isBorder = true; // Border with the ocean
+                                break;
+                            }
+
+                            int neighborOwner = world.stateID[nx][ny];
+                            if (neighborOwner != 0 && neighborOwner != owner) {
+                                isBorder = true; // Border with another state
+                                break;
+                            }
+                        }
+
+                        yield isBorder ? Color.BLACK : world.stateColors[owner];
+                    }
+
                     default -> Color.BLACK;
                 };
 
