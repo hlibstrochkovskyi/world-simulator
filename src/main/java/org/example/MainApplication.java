@@ -365,6 +365,11 @@ public class MainApplication extends Application {
         }
     }
 
+
+    /**
+     * Updates the globe texture by rendering the selected layer (e.g., Terrain, Biomes, Temperature, etc.)
+     * onto a WritableImage and applying it as the diffuse map of the globe.
+     */
     private void updateGlobeTexture() {
         WritableImage texture = new WritableImage(world.size, world.size);
 
@@ -425,6 +430,13 @@ public class MainApplication extends Application {
         globe.setMaterial(material);
     }
 
+
+    /**
+     * Determines the terrain color based on elevation and sea level.
+     * @param elevation The elevation value of the terrain (0.0 to 1.0).
+     * @param seaLevel The sea level threshold (0.0 to 1.0).
+     * @return The color representing the terrain, varying from ocean blue to mountain white.
+     */
     private Color getTerrainColor(double elevation, double seaLevel) {
         if (elevation < seaLevel) {
             double depth = (seaLevel - elevation) / seaLevel;
@@ -438,6 +450,12 @@ public class MainApplication extends Application {
         }
     }
 
+
+    /**
+     * Determines the biome color based on the biome type.
+     * @param biome The biome type (e.g., OCEAN, TUNDRA, GRASSLAND, etc.).
+     * @return The color representing the biome.
+     */
     private Color getBiomeColor(Biome biome) {
         return switch (biome) {
             case OCEAN -> Color.rgb(0, 105, 148);
@@ -453,6 +471,13 @@ public class MainApplication extends Application {
         };
     }
 
+
+    /**
+     * Determines the temperature color based on the temperature value.
+     * Maps temperatures from -30°C to 40°C to a gradient from blue to red.
+     * @param temp The temperature value in degrees Celsius.
+     * @return The color representing the temperature.
+     */
     private Color getTemperatureColor(double temp) {
         // -30°C to 40°C mapped to blue -> red
         double normalized = (temp + 30) / 70.0;
@@ -465,11 +490,23 @@ public class MainApplication extends Application {
         }
     }
 
+
+    /**
+     * Determines the humidity color based on the humidity value.
+     * @param humidity The humidity value (0.0 to 1.0).
+     * @return The color representing the humidity, where higher humidity is darker.
+     */
     private Color getHumidityColor(double humidity) {
         int val = (int)(humidity * 255);
         return Color.rgb(255 - val, 255 - val, 255);
     }
 
+
+    /**
+     * Saves the current map canvas as a PNG image file.
+     * Opens a file chooser dialog for the user to select the save location.
+     * Displays a success or error alert based on the outcome.
+     */
     private void saveImage() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save World Image");
@@ -500,6 +537,11 @@ public class MainApplication extends Application {
         }
     }
 
+
+    /**
+     * The main entry point for the JavaFX application.
+     * @param args Command-line arguments passed to the application.
+     */
     public static void main(String[] args) {
         launch(args);
     }
