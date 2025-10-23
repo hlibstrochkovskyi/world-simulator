@@ -16,6 +16,15 @@ class World {
     int[][] stateID; // Stores the ID (1, 2, 3...) of the state owning this cell
     Color[] stateColors; // Stores a random color for each state ID
 
+
+    /**
+     * Constructs a new World instance with the specified parameters.
+     * Initializes the world grid and its properties.
+     * @param size The size of the world grid (size x size).
+     * @param seaLevel The sea level threshold (0.0 to 1.0).
+     * @param worldScale The scale of the world for noise generation.
+     * @param worldOctaves The number of octaves for noise generation.
+     */
     public World(int size, double seaLevel, double worldScale, int worldOctaves) {
         this.size = size;
         this.seaLevel = seaLevel;
@@ -37,6 +46,13 @@ class World {
         int x, y, ownerID;
         double cost;
 
+        /**
+         * Constructs a new StateCell instance.
+         * @param x The x-coordinate of the cell.
+         * @param y The y-coordinate of the cell.
+         * @param ownerID The ID of the state owning this cell.
+         * @param cost The movement cost to reach this cell.
+         */
         public StateCell(int x, int y, int ownerID, double cost) {
             this.x = x;
             this.y = y;
@@ -44,12 +60,23 @@ class World {
             this.cost = cost;
         }
 
+
+        /**
+         * Compares this StateCell with another based on movement cost.
+         * @param other The other StateCell to compare to.
+         * @return A negative value if this cell has a lower cost, zero if equal, or a positive value otherwise.
+         */
         @Override
         public int compareTo(StateCell other) {
             return Double.compare(this.cost, other.cost);
         }
     }
 
+    /**
+     * Generates the world by calculating elevation, temperature, humidity, and biomes.
+     * Optionally generates states if the `generateStates` parameter is true.
+     * @param generateStates Whether to generate states in the world.
+     */
     public void generate(boolean generateStates) {
         Random rand = new Random();
         SimplexNoise elevationNoise = new SimplexNoise(rand.nextLong());
@@ -176,6 +203,10 @@ class World {
     }
 
 
+    /**
+     * Runs the state generation algorithm using a modified Dijkstra's algorithm.
+     * Assigns state ownership to each cell in the world grid.
+     */
     private void runStateGeneration() {
         int numStates = 50;
         Random rand = new Random();
@@ -255,6 +286,13 @@ class World {
     }
 
 
+    /**
+     * Determines the biome of a cell based on elevation, temperature, and humidity.
+     * @param elev The elevation value of the cell (0.0 to 1.0).
+     * @param temp The temperature value of the cell in degrees Celsius.
+     * @param humid The humidity value of the cell (0.0 to 1.0).
+     * @return The biome type for the cell.
+     */
     private Biome determineBiome(double elev, double temp, double humid) {
         if (elev < seaLevel) return Biome.OCEAN;
         if (elev > 0.75) return Biome.MOUNTAIN; // High altitude mountains
