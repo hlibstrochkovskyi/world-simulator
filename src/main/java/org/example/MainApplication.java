@@ -41,6 +41,13 @@ public class MainApplication extends Application {
     private Rotate rotateY = new Rotate(0, Rotate.Y_AXIS);
     private boolean autoRotate = true;
 
+
+
+    /**
+     * The main entry point for the JavaFX application.
+     * Sets up the primary stage, initializes the world, and creates the UI layout.
+     * @param primaryStage The primary stage for this application.
+     */
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("World Simulator");
@@ -98,6 +105,11 @@ public class MainApplication extends Application {
         timer.start();
     }
 
+    /**
+     * Creates the control panel containing buttons, sliders, and radio buttons
+     * for generating the world, saving images, and selecting layers.
+     * @return An `HBox` containing the control panel UI elements.
+     */
     private HBox createControlPanel() {
         HBox controlPanel = new HBox(15);
         controlPanel.setPadding(new Insets(10));
@@ -165,7 +177,6 @@ public class MainApplication extends Application {
         seaLevelSlider.valueProperty().addListener((obs, old, val) ->
                 seaLabel.setText(String.format("Sea Level: %.2f", val.doubleValue())));
 
-        // --- (NEW) World Scale Slider ---
         Label scaleLabel = new Label("World Scale: 2.0");
         worldScaleSlider = new Slider(0.5, 5.0, 2.0); // 0.5 = big continents, 5.0 = many islands
         worldScaleSlider.setShowTickLabels(false);
@@ -173,9 +184,9 @@ public class MainApplication extends Application {
         worldScaleSlider.valueProperty().addListener((obs, old, val) ->
                 scaleLabel.setText(String.format("World Scale: %.1f", val.doubleValue())));
 
-        // --- (NEW) World Detail Slider ---
+
         Label detailLabel = new Label("Detail Level: 5");
-        worldDetailSlider = new Slider(1, 8, 5); // 1 = smooth, 8 = detailed
+        worldDetailSlider = new Slider(1, 8, 5);
         worldDetailSlider.setBlockIncrement(1);
         worldDetailSlider.setMajorTickUnit(1);
         worldDetailSlider.setMinorTickCount(0);
@@ -183,7 +194,6 @@ public class MainApplication extends Application {
         worldDetailSlider.valueProperty().addListener((obs, old, val) ->
                 detailLabel.setText("Detail Level: " + val.intValue()));
 
-        // --- Add ALL sliders to the box ---
         sliderBox.getChildren().addAll(
                 sizeLabel, worldSizeSlider,
                 seaLabel, seaLevelSlider,
@@ -199,6 +209,12 @@ public class MainApplication extends Application {
         return controlPanel;
     }
 
+
+    /**
+     * Creates the 3D globe view using a JavaFX `SubScene`.
+     * Adds mouse interaction for rotating the globe and sets up auto-rotation.
+     * @return A `Parent` node containing the 3D globe view.
+     */
     private Parent create3DGlobe() {
         Group root3D = new Group();
 
@@ -256,6 +272,12 @@ public class MainApplication extends Application {
         return container;
     }
 
+
+    /**
+     * Creates the 3D globe view using a JavaFX `SubScene`.
+     * Adds mouse interaction for rotating the globe and sets up autorotation.
+     * @return A `Parent` node containing the 3D globe view.
+     */
     private void setupMapInteraction() {
         mapCanvas.setOnMouseMoved(event -> {
             int x = (int)(event.getX() / mapCanvas.getWidth() * world.size);
@@ -277,6 +299,12 @@ public class MainApplication extends Application {
         });
     }
 
+
+    /**
+     * Generates a new world based on the current slider values.
+     * Updates the world size, sea level, scale, detail level, and state generation settings.
+     * Renders the 2D map and updates the 3D globe texture.
+     */
     private void generateWorld() {
         int size = (int)worldSizeSlider.getValue();
         double seaLevel = seaLevelSlider.getValue();
@@ -302,6 +330,12 @@ public class MainApplication extends Application {
     }
 
 
+    /**
+     * Renders the 2D map onto the canvas based on the selected layer.
+     * Iterates through each cell of the world grid and determines the color
+     * based on the selected layer (e.g., Terrain, Biomes, Temperature, etc.).
+     * Handles special cases such as state borders for the "States" layer.
+     */
     private void renderMap() {
         GraphicsContext gc = mapCanvas.getGraphicsContext2D();
         double w = mapCanvas.getWidth();
