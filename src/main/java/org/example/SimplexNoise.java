@@ -17,12 +17,17 @@ class SimplexNoise {
             {0,1,1}, {0,-1,1}, {0,1,-1}, {0,-1,-1}
     };
 
-    // Skewing and unskewing factors for 2D and 3D
     private static final double F2 = 0.5 * (Math.sqrt(3.0) - 1.0);
     private static final double G2 = (3.0 - Math.sqrt(3.0)) / 6.0;
     private static final double F3 = 1.0 / 3.0;
     private static final double G3 = 1.0 / 6.0;
 
+
+    /**
+     * Constructs a new SimplexNoise instance with the specified seed.
+     * Initializes the permutation arrays used for noise generation.
+     * @param seed The seed value for randomizing the noise.
+     */
     public SimplexNoise(long seed) {
         Random rand = new Random(seed);
         int[] p_local = new int[256];
@@ -37,27 +42,54 @@ class SimplexNoise {
             p_local[j] = tmp;
         }
 
-        // Duplicating p_local to p and perm to avoid index wrapping
         for (int i = 0; i < 512; i++) {
             perm[i] = p_local[i & 255];
-            p[i] = p_local[i & 255]; // p is used by original 2D code
+            p[i] = p_local[i & 255];
         }
     }
 
+    /**
+     * Computes the largest integer less than or equal to the given value.
+     * @param x The input value.
+     * @return The largest integer less than or equal to x.
+     */
     private int fastfloor(double x) {
         int xi = (int) x;
         return x < xi ? xi - 1 : xi;
     }
 
+
+    /**
+     * Computes the dot product of a 2D gradient vector and the given coordinates.
+     * @param g The gradient vector.
+     * @param x The x-coordinate.
+     * @param y The y-coordinate.
+     * @return The dot product of the gradient vector and the coordinates.
+     */
     private double dot(int[] g, double x, double y) {
         return g[0] * x + g[1] * y;
     }
 
+
+    /**
+     * Computes the dot product of a 3D gradient vector and the given coordinates.
+     * @param g The gradient vector.
+     * @param x The x-coordinate.
+     * @param y The y-coordinate.
+     * @param z The z-coordinate.
+     * @return The dot product of the gradient vector and the coordinates.
+     */
     private double dot(int[] g, double x, double y, double z) {
         return g[0] * x + g[1] * y + g[2] * z;
     }
 
-    // --- 2D NOISE (Original function, now non-static) ---
+
+    /**
+     * Generates 2D Simplex noise for the given coordinates.
+     * @param xin The x-coordinate.
+     * @param yin The y-coordinate.
+     * @return The noise value at the given coordinates.
+     */
     public double noise(double xin, double yin) {
         double n0, n1, n2;
         double s = (xin + yin) * F2;
