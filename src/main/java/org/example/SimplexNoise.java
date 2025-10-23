@@ -140,7 +140,6 @@ class SimplexNoise {
         return 70.0 * (n0 + n1 + n2);
     }
 
-    // --- 3D NOISE (New function) ---
     public double noise(double xin, double yin, double zin) {
         double n0, n1, n2, n3;
         double s = (xin + yin + zin) * F3;

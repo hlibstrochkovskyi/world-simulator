@@ -31,6 +31,7 @@ public class MainApplication extends Application {
     private Label tooltipLabel;
     private Slider seaLevelSlider;
     private Slider worldScaleSlider;
+    private Slider numStatesSlider;
     private CheckBox statesCheckBox;
     private Slider worldDetailSlider;
     private Slider worldSizeSlider;
@@ -190,15 +191,25 @@ public class MainApplication extends Application {
         worldDetailSlider.setBlockIncrement(1);
         worldDetailSlider.setMajorTickUnit(1);
         worldDetailSlider.setMinorTickCount(0);
-        worldDetailSlider.setSnapToTicks(true); // Only allow whole numbers
+        worldDetailSlider.setSnapToTicks(true); // Only whole numbers
         worldDetailSlider.valueProperty().addListener((obs, old, val) ->
                 detailLabel.setText("Detail Level: " + val.intValue()));
+
+        Label statesLabel = new Label("Number of States: 50");
+        numStatesSlider = new Slider(10, 250, 50);
+        numStatesSlider.setBlockIncrement(1);
+        numStatesSlider.setMajorTickUnit(20);
+        numStatesSlider.setMinorTickCount(0);
+        numStatesSlider.setSnapToTicks(true);
+        numStatesSlider.valueProperty().addListener((obs, old, val) ->
+                statesLabel.setText("Number of States: " + val.intValue()));
 
         sliderBox.getChildren().addAll(
                 sizeLabel, worldSizeSlider,
                 seaLabel, seaLevelSlider,
                 scaleLabel, worldScaleSlider,
-                detailLabel, worldDetailSlider
+                detailLabel, worldDetailSlider,
+                statesLabel, numStatesSlider
         );
 
         controlPanel.getChildren().addAll(
@@ -311,14 +322,14 @@ public class MainApplication extends Application {
         double scale = worldScaleSlider.getValue();
         int octaves = (int)worldDetailSlider.getValue();
         boolean generateStates = statesCheckBox.isSelected();
+        int numStates = (int)numStatesSlider.getValue(); // <-- ADD THIS
 
         world = new World(size, seaLevel, scale, octaves);
-        world.generate(generateStates);
+        world.generate(generateStates, numStates); // <-- MODIFIED
 
         renderMap();
         updateGlobeTexture();
     }
-
 
     /**
      * Called when the layer selection changes.
@@ -352,6 +363,9 @@ public class MainApplication extends Application {
                     case "Temperature" -> getTemperatureColor(world.temperature[x][y]);
                     case "Humidity" -> getHumidityColor(world.humidity[x][y]);
                     case "States" -> {
+                        if (world.stateColors == null || world.stateID == null) {
+                            yield getTerrainColor(world.elevation[x][y], world.seaLevel);
+                        }
                         if (world.elevation[x][y] < world.seaLevel) {
                             yield getTerrainColor(world.elevation[x][y], world.seaLevel);
                         }
@@ -419,6 +433,9 @@ public class MainApplication extends Application {
                     case "Temperature" -> getTemperatureColor(world.temperature[x][y]);
                     case "Humidity" -> getHumidityColor(world.humidity[x][y]);
                     case "States" -> {
+                        if (world.stateColors == null || world.stateID == null) {
+                            yield getTerrainColor(world.elevation[x][y], world.seaLevel);
+                        }
                         if (world.elevation[x][y] < world.seaLevel) {
                             yield getTerrainColor(world.elevation[x][y], world.seaLevel);
                         }

@@ -77,7 +77,7 @@ class World {
      * Optionally generates states if the `generateStates` parameter is true.
      * @param generateStates Whether to generate states in the world.
      */
-    public void generate(boolean generateStates) {
+    public void generate(boolean generateStates, int numStates) {
         Random rand = new Random();
         SimplexNoise elevationNoise = new SimplexNoise(rand.nextLong());
         SimplexNoise tempNoise = new SimplexNoise(rand.nextLong());
@@ -194,10 +194,11 @@ class World {
 
 
         if (generateStates) {
-            runStateGeneration();
+            runStateGeneration(numStates);
         } else {
 
             this.stateID = new int[size][size];
+            this.stateColors = null;
         }
 
     }
@@ -207,8 +208,8 @@ class World {
      * Runs the state generation algorithm using a modified Dijkstra's algorithm.
      * Assigns state ownership to each cell in the world grid.
      */
-    private void runStateGeneration() {
-        int numStates = 50;
+    private void runStateGeneration(int numStates) {
+
         Random rand = new Random();
 
         this.stateID = new int[size][size];
