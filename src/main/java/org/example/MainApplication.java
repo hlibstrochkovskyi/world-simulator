@@ -41,6 +41,33 @@ public class MainApplication extends Application {
     private Rotate rotateX = new Rotate(0, Rotate.X_AXIS);
     private Rotate rotateY = new Rotate(0, Rotate.Y_AXIS);
     private boolean autoRotate = true;
+    private static final String[] CAPITAL_NAMES = new String[] {
+            "Avalen", "Mirath", "Solmera", "Virelia", "Dravon", "Lantora", "Orenvale", "Castrel", "Zandira", "Helvorn",
+            "Trisora", "Nuvane", "Ralden", "Etralia", "Mornath", "Cydara", "Alvenor", "Polmera", "Kyronis", "Thelmar",
+            "Rivaren", "Zolcar", "Ferin", "Bryndal", "Elvoria", "Northel", "Pryden", "Arisca", "Velthir", "Sundora",
+            "Olthar", "Lysmar", "Quavon", "Noreth", "Valenra", "Darmstadt", "Tyvra", "Merthil", "Azuron", "Delvra",
+            "Soltaren", "Arvenia", "Clyria", "Dornath", "Tyrelon", "Ismara", "Halven", "Breltar", "Fendris", "Qarthia",
+            "Lormund", "Zephyra", "Vantera", "Asmir", "Pelanor", "Drevin", "Corvane", "Mynora", "Rethen", "Estalia",
+            "Falren", "Jandor", "Zenvia", "Teralon", "Vrosia", "Melthra", "Astire", "Korvale", "Vandra", "Olyrion",
+            "Tashven", "Myrden", "Elnora", "Galdir", "Sovria", "Lureth", "Fenora", "Cravon", "Bellith", "Drasden",
+            "Yorath", "Zelven", "Amrya", "Talven", "Crestin", "Vulmar", "Trubasos", "Marthos", "Sevren", "Paltha",
+            "Nelora", "Irvane", "Wendar", "Avenor", "Phyra", "Colven", "Thalir", "Evandor", "Mireth", "Solvir",
+            "Erthyn", "Rovanis", "Caelra", "Orthil", "Vireth", "Trandor", "Lurelia", "Cendral", "Borthen", "Elyra",
+            "Dalthor", "Monira", "Zorath", "Faldra", "Arvion", "Kestra", "Yundar", "Molven", "Prestal", "Zandor",
+            "Thirion", "Orenda", "Malthea", "Xyrel", "Vorath", "Lurven", "Enlira", "Phandor", "Surnen", "Velis",
+            "Novara", "Odessa", "Eryndor", "Torsen", "Havria", "Crendal", "Vathen", "Eltira", "Forvia", "Dranor",
+            "Lysten", "Korvia", "Nemora", "Thyndal", "Olevra", "Calith", "Vordel", "Elmyra", "Sornath", "Triven",
+            "Yarven", "Avyra", "Renlor", "Mistra", "Polven", "Jorath", "Zelvia", "Dalmor", "Venora", "Althir",
+            "Cryneth", "Nolvar", "Perden", "Vyrona", "Ostrel", "Myrath", "Glendor", "Salvia", "Craven", "Belthor",
+            "Venith", "Ormira", "Valmar", "Fenlir", "Qendra", "Sylven", "Ravora", "Aleris", "Torven", "Deryn",
+            "Zorvia", "Relmar", "Athenra", "Vunor", "Caldra", "Nirven", "Faldir", "Velria", "Orisar", "Kendria",
+            "Meral", "Thraven", "Salnor", "Pfungstadt", "Dorven", "Elthra", "Moryn", "Vaslen", "Trilora", "Olyven",
+            "Jandria", "Sylmar", "Feroth", "Bronel", "Avyron", "Delmar", "Corven", "Tyvora", "Nistra", "Welyra",
+            "Envar", "Lyssen", "Rynor", "Thalven", "Qyros", "Zelmar", "Arenth", "Fenora", "Vornis", "Lysend",
+            "Halria", "Odrin", "Myrsel", "Valtor", "Enoria", "Trisden", "Orlven", "Sylvenia", "Derath", "Phyron",
+            "Nolvera", "Ardal", "Belmar", "Xendria", "Coris", "Vashor", "Lentis", "Yorven", "Halden", "Fynora",
+            "Voltris", "Elrath", "Melvon", "Tarven", "Zorlin", "Avendra", "Rilmar", "Prylia", "Dorath", "Cynora"
+    };
 
 
 
@@ -54,7 +81,7 @@ public class MainApplication extends Application {
         primaryStage.setTitle("World Simulator");
 
         // Initialize world with default settings
-        world = new World(512, 0.5, 2.0, 5);
+        world = new World(512, 0.5, 2.0, 5, null);
 
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(10));
@@ -285,9 +312,8 @@ public class MainApplication extends Application {
 
 
     /**
-     * Creates the 3D globe view using a JavaFX `SubScene`.
-     * Adds mouse interaction for rotating the globe and sets up autorotation.
-     * @return A `Parent` node containing the 3D globe view.
+     * Sets up mouse move interactions for the 2D map canvas.
+     * Displays a tooltip with details of the cell under the cursor.
      */
     private void setupMapInteraction() {
         mapCanvas.setOnMouseMoved(event -> {
@@ -302,9 +328,17 @@ public class MainApplication extends Application {
                 double humid = world.humidity[x][y];
                 String biome = world.biomes[x][y].toString();
 
+                String capitalInfo = "";
+                if (world.stateNames != null && world.stateID[x][y] > 0) {
+                    String capitalName = world.stateNames[world.stateID[x][y]];
+                    if (capitalName != null) {
+                        capitalInfo = " | Capital: " + capitalName;
+                    }
+                }
+
                 tooltipLabel.setText(String.format(
-                        "Lat: %.1f\u00B0, Lon: %.1f\u00B0 | Elevation: %.2f | Temp: %.1f\u00B0C | Humidity: %.0f%% | Biome: %s",
-                        lat, lon, elevation, temp, humid * 100, biome
+                        "Lat: %.1f°, Lon: %.1f° | Elevation: %.2f | Temp: %.1f°C | Humidity: %.0f%% | Biome: %s%s",
+                        lat, lon, elevation, temp, humid * 100, biome, capitalInfo
                 ));
             }
         });
@@ -322,10 +356,19 @@ public class MainApplication extends Application {
         double scale = worldScaleSlider.getValue();
         int octaves = (int)worldDetailSlider.getValue();
         boolean generateStates = statesCheckBox.isSelected();
-        int numStates = (int)numStatesSlider.getValue(); // <-- ADD THIS
+        int numStates = (int)numStatesSlider.getValue();
 
-        world = new World(size, seaLevel, scale, octaves);
-        world.generate(generateStates, numStates); // <-- MODIFIED
+        String[] stateNames = null;
+        if (generateStates) {
+            Random rand = new Random();
+            stateNames = new String[numStates + 1];
+            for (int i = 1; i <= numStates; i++) {
+                stateNames[i] = CAPITAL_NAMES[rand.nextInt(CAPITAL_NAMES.length)];
+            }
+        }
+
+        world = new World(size, seaLevel, scale, octaves, stateNames);
+        world.generate(generateStates, numStates);
 
         renderMap();
         updateGlobeTexture();

@@ -13,8 +13,9 @@ class World {
     double[][] temperature;
     double[][] humidity;
     Biome[][] biomes;
-    int[][] stateID; // Stores the ID (1, 2, 3...) of the state owning this cell
-    Color[] stateColors; // Stores a random color for each state ID
+    int[][] stateID;
+    Color[] stateColors;
+    String[] stateNames;
 
 
     /**
@@ -24,8 +25,9 @@ class World {
      * @param seaLevel The sea level threshold (0.0 to 1.0).
      * @param worldScale The scale of the world for noise generation.
      * @param worldOctaves The number of octaves for noise generation.
+     * @param stateNames A pre-generated array of state names, or null if states are not generated.
      */
-    public World(int size, double seaLevel, double worldScale, int worldOctaves) {
+    public World(int size, double seaLevel, double worldScale, int worldOctaves, String[] stateNames) {
         this.size = size;
         this.seaLevel = seaLevel;
         this.worldScale = worldScale;
@@ -35,6 +37,7 @@ class World {
         this.humidity = new double[size][size];
         this.biomes = new Biome[size][size];
         this.stateID = new int[size][size];
+        this.stateNames = stateNames;
     }
 
 
@@ -76,6 +79,7 @@ class World {
      * Generates the world by calculating elevation, temperature, humidity, and biomes.
      * Optionally generates states if the `generateStates` parameter is true.
      * @param generateStates Whether to generate states in the world.
+     * @param numStates The number of states to generate if generateStates is true.
      */
     public void generate(boolean generateStates, int numStates) {
         Random rand = new Random();
@@ -199,6 +203,7 @@ class World {
 
             this.stateID = new int[size][size];
             this.stateColors = null;
+            this.stateNames = null;
         }
 
     }
@@ -207,6 +212,7 @@ class World {
     /**
      * Runs the state generation algorithm using a modified Dijkstra's algorithm.
      * Assigns state ownership to each cell in the world grid.
+     * @param numStates The number of states to generate.
      */
     private void runStateGeneration(int numStates) {
 
@@ -214,7 +220,7 @@ class World {
 
         this.stateID = new int[size][size];
         this.stateColors = new Color[numStates + 1];
-        this.stateColors[0] = Color.TRANSPARENT; //
+        this.stateColors[0] = Color.TRANSPARENT;
 
         double[][] totalCost = new double[size][size];
         for (int y = 0; y < size; y++) {
@@ -314,9 +320,4 @@ class World {
             return Biome.DESERT;
         }
     }
-
-
-
-
-
 }
