@@ -19,6 +19,9 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.util.Random;
 import javafx.scene.Cursor;
+import javafx.scene.image.Image;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 
 public class MainApplication extends Application {
 
@@ -93,6 +96,7 @@ public class MainApplication extends Application {
         mapCanvas = new Canvas(1000, 600);
         setupMapInteraction();
         StackPane mapPane = new StackPane(mapCanvas);
+        mapPane.setStyle("-fx-background-color: #222;");
         mapTab.setContent(mapPane);
 
         Tab globeTab = new Tab("3D Globe");
@@ -104,11 +108,15 @@ public class MainApplication extends Application {
 
         tooltipLabel = new Label("Hover over the map to see details");
         tooltipLabel.setPadding(new Insets(5));
-        tooltipLabel.setStyle("-fx-background-color: #f0f0f0; -fx-border-color: #cccccc;");
+        tooltipLabel.getStyleClass().add("tooltip-bar");
         root.setBottom(tooltipLabel);
 
         Scene scene = new Scene(root, 1200, 800);
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+        Text emojiText = new Text("\uD83C\uDF0D");
+        emojiText.setFont(Font.font("Segoe UI Emoji", 64));
+        Image icon = emojiText.snapshot(null, null);
+        primaryStage.getIcons().add(icon);
         primaryStage.setScene(scene);
         primaryStage.show();
 
@@ -254,12 +262,11 @@ public class MainApplication extends Application {
 
         TitledPane statesPane = new TitledPane("States", statesSettingsBox);
 
-        // --- Assemble Accordion ---
-        accordion.getPanes().addAll(worldPane, statesPane);
-        accordion.setExpandedPane(worldPane); // Expand first pane by default
+        VBox settingsContainer = new VBox(10);
+        settingsContainer.getChildren().addAll(worldPane, statesPane);
 
-        VBox settingsContainer = new VBox(accordion);
-        settingsContainer.setStyle("-fx-background-color: #f4f4f4;");
+        settingsContainer.setStyle("-fx-background-color: #2D2D2D;");
+
 
         return settingsContainer;
     }
