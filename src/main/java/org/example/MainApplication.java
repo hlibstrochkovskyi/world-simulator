@@ -111,6 +111,16 @@ public class MainApplication extends Application {
         tooltipLabel.getStyleClass().add("tooltip-bar");
         root.setBottom(tooltipLabel);
 
+
+        try {
+            Image icon = new Image(getClass().getResourceAsStream("/icon.png"));
+            primaryStage.getIcons().add(icon);
+        } catch (Exception e) {
+            System.err.println("Cant load 'icon.png'.");
+            e.printStackTrace();
+        }
+
+
         Scene scene = new Scene(root, 1200, 800);
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
         Text emojiText = new Text("\uD83C\uDF0D");
