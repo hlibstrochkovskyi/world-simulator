@@ -2,7 +2,6 @@ package org.example;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.*;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -80,19 +79,15 @@ public class MainApplication extends Application {
     public void start(Stage primaryStage) {
         primaryStage.setTitle("World Simulator");
 
-        // Initialize world with default settings
         world = new World(512, 0.5, 2.0, 5, null);
 
         BorderPane root = new BorderPane();
-        root.setPadding(new Insets(10));
+        root.setTop(createToolBar());
 
-        // Top controls
-        root.setTop(createControlPanel());
+        root.setLeft(createSettingsPanel());
 
-        // Center - tabbed view
         tabPane = new TabPane();
 
-        // 2D Map tab
         Tab mapTab = new Tab("2D Map");
         mapTab.setClosable(false);
         mapCanvas = new Canvas(1000, 600);
@@ -100,7 +95,6 @@ public class MainApplication extends Application {
         StackPane mapPane = new StackPane(mapCanvas);
         mapTab.setContent(mapPane);
 
-        // 3D Globe tab
         Tab globeTab = new Tab("3D Globe");
         globeTab.setClosable(false);
         globeTab.setContent(create3DGlobe());
@@ -108,20 +102,18 @@ public class MainApplication extends Application {
         tabPane.getTabs().addAll(mapTab, globeTab);
         root.setCenter(tabPane);
 
-        // Bottom tooltip
         tooltipLabel = new Label("Hover over the map to see details");
         tooltipLabel.setPadding(new Insets(5));
         tooltipLabel.setStyle("-fx-background-color: #f0f0f0; -fx-border-color: #cccccc;");
         root.setBottom(tooltipLabel);
 
-        Scene scene = new Scene(root, 1024, 768);
+        Scene scene = new Scene(root, 1200, 800);
+        scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        // Generate initial world
         generateWorld();
 
-        // Auto-rotation animation
         javafx.animation.AnimationTimer timer = new javafx.animation.AnimationTimer() {
             @Override
             public void handle(long now) {
@@ -134,64 +126,70 @@ public class MainApplication extends Application {
     }
 
     /**
-     * Creates the control panel containing buttons, sliders, and radio buttons
-     * for generating the world, saving images, and selecting layers.
-     * @return An `HBox` containing the control panel UI elements.
+     * Creates the top ToolBar with action buttons and layer toggles.
+     * @return A `Node` containing the ToolBar.
      */
-    private HBox createControlPanel() {
-        HBox controlPanel = new HBox(15);
-        controlPanel.setPadding(new Insets(10));
-        controlPanel.setAlignment(Pos.CENTER_LEFT);
-
+    private Node createToolBar() {
         Button generateBtn = new Button("Generate World");
         generateBtn.setOnAction(e -> generateWorld());
-
-        statesCheckBox = new CheckBox("Generate States");
-        statesCheckBox.setSelected(false); // Default is OFF
 
         Button saveBtn = new Button("Save Image");
         saveBtn.setOnAction(e -> saveImage());
 
         // Layer selection
-        Label layerLabel = new Label("Layer:");
         layerGroup = new ToggleGroup();
 
-
-        RadioButton terrainBtn = new RadioButton("Terrain");
+        ToggleButton terrainBtn = new ToggleButton("Terrain");
         terrainBtn.setToggleGroup(layerGroup);
         terrainBtn.setSelected(true);
         terrainBtn.setOnAction(e -> onLayerChange());
 
-//        RadioButton biomeBtn = new RadioButton("Biomes");
-//        biomeBtn.setToggleGroup(layerGroup);
-//        biomeBtn.setOnAction(e -> onLayerChange());
+        ToggleButton biomeBtn = new ToggleButton("Biomes");
+        biomeBtn.setToggleGroup(layerGroup);
+        biomeBtn.setOnAction(e -> onLayerChange());
 
-        RadioButton tempBtn = new RadioButton("Temperature");
+        ToggleButton tempBtn = new ToggleButton("Temperature");
         tempBtn.setToggleGroup(layerGroup);
         tempBtn.setOnAction(e -> onLayerChange());
 
-        RadioButton humidBtn = new RadioButton("Humidity");
+        ToggleButton humidBtn = new ToggleButton("Humidity");
         humidBtn.setToggleGroup(layerGroup);
         humidBtn.setOnAction(e -> onLayerChange());
 
-        RadioButton statesBtn = new RadioButton("States");
+        ToggleButton statesBtn = new ToggleButton("States");
         statesBtn.setToggleGroup(layerGroup);
         statesBtn.setOnAction(e -> onLayerChange());
 
+        ToolBar toolBar = new ToolBar(
+                generateBtn,
+                saveBtn,
+                new Separator(),
+                new Label("Layers:"),
+                terrainBtn,
+                biomeBtn,
+                tempBtn,
+                humidBtn,
+                statesBtn
+        );
 
-        Separator sep1 = new Separator();
-        sep1.setOrientation(javafx.geometry.Orientation.VERTICAL);
+        return toolBar;
+    }
 
-        Separator sep2 = new Separator();
-        sep2.setOrientation(javafx.geometry.Orientation.VERTICAL);
+    /**
+     * Creates the left settings panel with sliders and options in an Accordion.
+     * @return A `Node` containing the settings panel.
+     */
+    private Node createSettingsPanel() {
+        Accordion accordion = new Accordion();
 
-        /// Sliders
-        VBox sliderBox = new VBox(5);
+        // --- Section 1: World Parameters ---
+        VBox worldSettingsBox = new VBox(10);
+        worldSettingsBox.setPadding(new Insets(10));
 
         // --- World Size Slider ---
         Label sizeLabel = new Label("World Size: 512");
         worldSizeSlider = new Slider(256, 1024, 512);
-        worldSizeSlider.setShowTickLabels(false);
+        worldSizeSlider.setShowTickLabels(true);
         worldSizeSlider.setShowTickMarks(true);
         worldSizeSlider.setMajorTickUnit(256);
         worldSizeSlider.valueProperty().addListener((obs, old, val) ->
@@ -200,51 +198,70 @@ public class MainApplication extends Application {
         // --- Sea Level Slider ---
         Label seaLabel = new Label("Sea Level: 0.50");
         seaLevelSlider = new Slider(0.3, 0.7, 0.5);
-        seaLevelSlider.setShowTickLabels(false);
-        seaLevelSlider.setShowTickMarks(true);
         seaLevelSlider.valueProperty().addListener((obs, old, val) ->
                 seaLabel.setText(String.format("Sea Level: %.2f", val.doubleValue())));
 
+        // --- World Scale Slider ---
         Label scaleLabel = new Label("World Scale: 2.0");
-        worldScaleSlider = new Slider(0.5, 5.0, 2.0); // 0.5 = big continents, 5.0 = many islands
-        worldScaleSlider.setShowTickLabels(false);
-        worldScaleSlider.setShowTickMarks(true);
+        worldScaleSlider = new Slider(0.5, 5.0, 2.0);
         worldScaleSlider.valueProperty().addListener((obs, old, val) ->
                 scaleLabel.setText(String.format("World Scale: %.1f", val.doubleValue())));
 
-
+        // --- Detail Level Slider ---
         Label detailLabel = new Label("Detail Level: 5");
         worldDetailSlider = new Slider(1, 8, 5);
         worldDetailSlider.setBlockIncrement(1);
         worldDetailSlider.setMajorTickUnit(1);
         worldDetailSlider.setMinorTickCount(0);
-        worldDetailSlider.setSnapToTicks(true); // Only whole numbers
+        worldDetailSlider.setSnapToTicks(true);
         worldDetailSlider.valueProperty().addListener((obs, old, val) ->
                 detailLabel.setText("Detail Level: " + val.intValue()));
 
+        worldSettingsBox.getChildren().addAll(
+                sizeLabel, worldSizeSlider,
+                seaLabel, seaLevelSlider,
+                scaleLabel, worldScaleSlider,
+                detailLabel, worldDetailSlider
+        );
+
+        TitledPane worldPane = new TitledPane("World Shape", worldSettingsBox);
+
+        // --- Section 2: States ---
+        VBox statesSettingsBox = new VBox(10);
+        statesSettingsBox.setPadding(new Insets(10));
+
+        // States CheckBox
+        statesCheckBox = new CheckBox("Generate States");
+        statesCheckBox.setSelected(false);
+
+        // Number of States
         Label statesLabel = new Label("Number of States: 50");
         numStatesSlider = new Slider(10, 250, 50);
         numStatesSlider.setBlockIncrement(1);
-        numStatesSlider.setMajorTickUnit(20);
-        numStatesSlider.setMinorTickCount(0);
         numStatesSlider.setSnapToTicks(true);
         numStatesSlider.valueProperty().addListener((obs, old, val) ->
                 statesLabel.setText("Number of States: " + val.intValue()));
 
-        sliderBox.getChildren().addAll(
-                sizeLabel, worldSizeSlider,
-                seaLabel, seaLevelSlider,
-                scaleLabel, worldScaleSlider,
-                detailLabel, worldDetailSlider,
-                statesLabel, numStatesSlider
+        // Bind slider to checkbox
+        numStatesSlider.disableProperty().bind(statesCheckBox.selectedProperty().not());
+        statesLabel.disableProperty().bind(statesCheckBox.selectedProperty().not());
+
+        statesSettingsBox.getChildren().addAll(
+                statesCheckBox,
+                statesLabel,
+                numStatesSlider
         );
 
-        controlPanel.getChildren().addAll(
-                generateBtn, statesCheckBox, saveBtn, sep1, layerLabel,
-                terrainBtn, tempBtn, humidBtn, statesBtn,
-                sep2, sliderBox
-        );
-        return controlPanel;
+        TitledPane statesPane = new TitledPane("States", statesSettingsBox);
+
+        // --- Assemble Accordion ---
+        accordion.getPanes().addAll(worldPane, statesPane);
+        accordion.setExpandedPane(worldPane); // Expand first pane by default
+
+        VBox settingsContainer = new VBox(accordion);
+        settingsContainer.setStyle("-fx-background-color: #f4f4f4;");
+
+        return settingsContainer;
     }
 
 
@@ -395,7 +412,10 @@ public class MainApplication extends Application {
         double w = mapCanvas.getWidth();
         double h = mapCanvas.getHeight();
 
-        RadioButton selected = (RadioButton) layerGroup.getSelectedToggle();
+        if (layerGroup.getSelectedToggle() == null) {
+            return;
+        }
+        ToggleButton selected = (ToggleButton) layerGroup.getSelectedToggle();
         String layer = selected.getText();
 
         for (int y = 0; y < world.size; y++) {
@@ -464,7 +484,10 @@ public class MainApplication extends Application {
     private void updateGlobeTexture() {
         WritableImage texture = new WritableImage(world.size, world.size);
 
-        RadioButton selected = (RadioButton) layerGroup.getSelectedToggle();
+        if (layerGroup.getSelectedToggle() == null) {
+            return;
+        }
+        ToggleButton selected = (ToggleButton) layerGroup.getSelectedToggle();
         String layer = selected.getText();
 
         for (int y = 0; y < world.size; y++) {
