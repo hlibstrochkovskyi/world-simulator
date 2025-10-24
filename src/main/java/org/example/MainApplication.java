@@ -20,8 +20,8 @@ import java.io.File;
 import java.util.Random;
 import javafx.scene.Cursor;
 import javafx.scene.image.Image;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
+// import javafx.scene.text.Font;
+// import javafx.scene.text.Text;
 
 public class MainApplication extends Application {
 
@@ -71,6 +71,8 @@ public class MainApplication extends Application {
             "Voltris", "Elrath", "Melvon", "Tarven", "Zorlin", "Avendra", "Rilmar", "Prylia", "Dorath", "Cynora"
     };
 
+    private static final double MAX_LAND_ELEVATION = 8848.0;
+    private static final double MAX_OCEAN_DEPTH = 11000.0;
 
 
     /**
@@ -94,7 +96,7 @@ public class MainApplication extends Application {
         Tab mapTab = new Tab("2D Map");
         mapTab.setClosable(false);
         mapCanvas = new Canvas(1000, 600);
-        setupMapInteraction();
+        setupMapInteraction(); // This is now updated
         StackPane mapPane = new StackPane(mapCanvas);
         mapPane.setStyle("-fx-background-color: #222;");
         mapTab.setContent(mapPane);
@@ -123,10 +125,8 @@ public class MainApplication extends Application {
 
         Scene scene = new Scene(root, 1200, 800);
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
-        Text emojiText = new Text("\uD83C\uDF0D");
-        emojiText.setFont(Font.font("Segoe UI Emoji", 64));
-        Image icon = emojiText.snapshot(null, null);
-        primaryStage.getIcons().add(icon);
+
+
         primaryStage.setScene(scene);
         primaryStage.show();
 
@@ -154,7 +154,6 @@ public class MainApplication extends Application {
         Button saveBtn = new Button("Save Image");
         saveBtn.setOnAction(e -> saveImage());
 
-        // Layer selection
         layerGroup = new ToggleGroup();
 
         ToggleButton terrainBtn = new ToggleButton("Terrain");
@@ -162,9 +161,9 @@ public class MainApplication extends Application {
         terrainBtn.setSelected(true);
         terrainBtn.setOnAction(e -> onLayerChange());
 
-        ToggleButton biomeBtn = new ToggleButton("Biomes");
-        biomeBtn.setToggleGroup(layerGroup);
-        biomeBtn.setOnAction(e -> onLayerChange());
+//        ToggleButton biomeBtn = new ToggleButton("Biomes");
+//        biomeBtn.setToggleGroup(layerGroup);
+//        biomeBtn.setOnAction(e -> onLayerChange());
 
         ToggleButton tempBtn = new ToggleButton("Temperature");
         tempBtn.setToggleGroup(layerGroup);
@@ -184,7 +183,6 @@ public class MainApplication extends Application {
                 new Separator(),
                 new Label("Layers:"),
                 terrainBtn,
-                biomeBtn,
                 tempBtn,
                 humidBtn,
                 statesBtn
@@ -198,9 +196,6 @@ public class MainApplication extends Application {
      * @return A `Node` containing the settings panel.
      */
     private Node createSettingsPanel() {
-        Accordion accordion = new Accordion();
-
-        // --- Section 1: World Parameters ---
         VBox worldSettingsBox = new VBox(10);
         worldSettingsBox.setPadding(new Insets(10));
 
@@ -357,7 +352,19 @@ public class MainApplication extends Application {
             if (x >= 0 && x < world.size && y >= 0 && y < world.size) {
                 double lat = 90 - (y * 180.0 / world.size);
                 double lon = (x * 360.0 / world.size) - 180;
-                double elevation = world.elevation[x][y];
+
+                double rawElevation = world.elevation[x][y];
+                double seaLevel = world.seaLevel;
+                double displayElevation;
+
+                if (rawElevation < seaLevel) {
+                    double depthPercentage = (seaLevel - rawElevation) / seaLevel;
+                    displayElevation = -depthPercentage * MAX_OCEAN_DEPTH;
+                } else {
+                    double heightPercentage = (rawElevation - seaLevel) / (1.0 - seaLevel);
+                    displayElevation = heightPercentage * MAX_LAND_ELEVATION;
+                }
+
                 double temp = world.temperature[x][y];
                 double humid = world.humidity[x][y];
                 String biome = world.biomes[x][y].toString();
@@ -371,8 +378,8 @@ public class MainApplication extends Application {
                 }
 
                 tooltipLabel.setText(String.format(
-                        "Lat: %.1f\u00B0, Lon: %.1f\u00B0 | Elevation: %.2f | Temp: %.1f\u00B0C | Humidity: %.0f%% | Biome: %s%s",
-                        lat, lon, elevation, temp, humid * 100, biome, capitalInfo
+                        "Lat: %.1f\u00B0, Lon: %.1f\u00B0 | Elevation: %.0f m | Temp: %.1f\u00B0C | Humidity: %.0f%% | Biome: %s%s",
+                        lat, lon, displayElevation, temp, humid * 100, biome, capitalInfo
                 ));
             }
         });
@@ -485,7 +492,6 @@ public class MainApplication extends Application {
                 gc.setFill(color);
                 double px = x * w / world.size;
                 double py = y * h / world.size;
-                // Use ceiling + 1 to prevent 1-pixel gaps
                 double pw = Math.ceil(w / world.size) + 1;
                 double ph = Math.ceil(h / world.size) + 1;
                 gc.fillRect(px, py, pw, ph);
@@ -538,13 +544,13 @@ public class MainApplication extends Application {
                             if (ny < 0 || ny >= world.size) continue;
 
                             if (world.elevation[nx][ny] < world.seaLevel) {
-                                isBorder = true; // Border with the ocean
+                                isBorder = true;
                                 break;
                             }
 
                             int neighborOwner = world.stateID[nx][ny];
                             if (neighborOwner != 0 && neighborOwner != owner) {
-                                isBorder = true; // Border with another state
+                                isBorder = true;
                                 break;
                             }
                         }
@@ -578,11 +584,11 @@ public class MainApplication extends Application {
         } else {
             double height = (elevation - seaLevel) / (1.0 - seaLevel);
             if (height < 0.05) return Color.rgb(81, 154, 45);
-            else if (height < 0.2) return Color.rgb(34, 139, 34);  // Green lowlands
-            else if (height < 0.4) return Color.rgb(107, 142, 35);  // Olive hills
+            else if (height < 0.2) return Color.rgb(34, 139, 34);
+            else if (height < 0.4) return Color.rgb(107, 142, 35);
             else if (height < 0.65) return Color.rgb(139, 137, 137);
-            else if (height < 0.70) return Color.rgb(105, 105, 100);// Gray mountains
-            else return Color.rgb(255, 250, 250);  // White peaks
+            else if (height < 0.70) return Color.rgb(105, 105, 100);
+            else return Color.rgb(255, 250, 250);
         }
     }
 
@@ -615,7 +621,6 @@ public class MainApplication extends Application {
      * @return The color representing the temperature.
      */
     private Color getTemperatureColor(double temp) {
-        // -30°C to 40°C mapped to blue -> red
         double normalized = (temp + 30) / 70.0;
         normalized = Math.max(0, Math.min(1, normalized));
 

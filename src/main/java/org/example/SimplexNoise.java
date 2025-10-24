@@ -10,7 +10,6 @@ class SimplexNoise {
     private final int[] p = new int[512];
     private final int[] perm = new int[512];
 
-    // 3D gradients
     private static final int[][] grad3 = {
             {1,1,0}, {-1,1,0}, {1,-1,0}, {-1,-1,0},
             {1,0,1}, {-1,0,1}, {1,0,-1}, {-1,0,-1},

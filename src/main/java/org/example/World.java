@@ -234,13 +234,12 @@ class World {
 
         for (int i = 1; i <= numStates; i++) {
             int x, y;
-            //random spot on land
             do {
                 x = rand.nextInt(size);
                 y = rand.nextInt(size);
             } while (elevation[x][y] < seaLevel);
 
-            this.stateID[x][y] = i; // Claim this cell
+            this.stateID[x][y] = i;
             this.stateColors[i] = Color.rgb(rand.nextInt(200) + 55, rand.nextInt(200) + 55, rand.nextInt(200) + 55);
             totalCost[x][y] = 0;
             queue.add(new StateCell(x, y, i, 0));
@@ -276,7 +275,7 @@ class World {
                 } else {
                     moveCost = 1.0;
                 }
-                // ---
+
 
                 double newCost = current.cost + moveCost;
 
@@ -302,9 +301,8 @@ class World {
      */
     private Biome determineBiome(double elev, double temp, double humid) {
         if (elev < seaLevel) return Biome.OCEAN;
-        if (elev > 0.75) return Biome.MOUNTAIN; // High altitude mountains
+        if (elev > 0.75) return Biome.MOUNTAIN;
 
-        // Temperature-humidity matrix
         if (temp < -10) return Biome.TUNDRA;
         if (temp < 0) return Biome.TAIGA;
 
