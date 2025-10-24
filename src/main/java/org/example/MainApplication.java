@@ -162,9 +162,9 @@ public class MainApplication extends Application {
         terrainBtn.setSelected(true);
         terrainBtn.setOnAction(e -> onLayerChange());
 
-        RadioButton biomeBtn = new RadioButton("Biomes");
-        biomeBtn.setToggleGroup(layerGroup);
-        biomeBtn.setOnAction(e -> onLayerChange());
+//        RadioButton biomeBtn = new RadioButton("Biomes");
+//        biomeBtn.setToggleGroup(layerGroup);
+//        biomeBtn.setOnAction(e -> onLayerChange());
 
         RadioButton tempBtn = new RadioButton("Temperature");
         tempBtn.setToggleGroup(layerGroup);
@@ -241,7 +241,7 @@ public class MainApplication extends Application {
 
         controlPanel.getChildren().addAll(
                 generateBtn, statesCheckBox, saveBtn, sep1, layerLabel,
-                terrainBtn, biomeBtn, tempBtn, humidBtn, statesBtn,
+                terrainBtn, tempBtn, humidBtn, statesBtn,
                 sep2, sliderBox
         );
         return controlPanel;
@@ -337,7 +337,7 @@ public class MainApplication extends Application {
                 }
 
                 tooltipLabel.setText(String.format(
-                        "Lat: %.1f°, Lon: %.1f° | Elevation: %.2f | Temp: %.1f°C | Humidity: %.0f%% | Biome: %s%s",
+                        "Lat: %.1f\u00B0, Lon: %.1f\u00B0 | Elevation: %.2f | Temp: %.1f\u00B0C | Humidity: %.0f%% | Biome: %s%s",
                         lat, lon, elevation, temp, humid * 100, biome, capitalInfo
                 ));
             }
@@ -537,9 +537,11 @@ public class MainApplication extends Application {
             return Color.rgb(0, (int)(100 * (1-depth)), (int)(150 + 105 * (1-depth)));
         } else {
             double height = (elevation - seaLevel) / (1.0 - seaLevel);
-            if (height < 0.2) return Color.rgb(34, 139, 34);  // Green lowlands
+            if (height < 0.05) return Color.rgb(81, 154, 45);
+            else if (height < 0.2) return Color.rgb(34, 139, 34);  // Green lowlands
             else if (height < 0.4) return Color.rgb(107, 142, 35);  // Olive hills
-            else if (height < 0.7) return Color.rgb(139, 137, 137);  // Gray mountains
+            else if (height < 0.65) return Color.rgb(139, 137, 137);
+            else if (height < 0.70) return Color.rgb(105, 105, 100);// Gray mountains
             else return Color.rgb(255, 250, 250);  // White peaks
         }
     }
@@ -553,14 +555,14 @@ public class MainApplication extends Application {
     private Color getBiomeColor(Biome biome) {
         return switch (biome) {
             case OCEAN -> Color.rgb(0, 105, 148);
-            case TUNDRA -> Color.rgb(221, 221, 187);
-            case TAIGA -> Color.rgb(153, 170, 119);
-            case GRASSLAND -> Color.rgb(196, 212, 170);
-            case TEMPERATE_FOREST -> Color.rgb(136, 170, 85);
-            case TROPICAL_RAINFOREST -> Color.rgb(61, 130, 61);
+            case TUNDRA -> Color.rgb(182, 182, 107);
+            case TAIGA -> Color.rgb(143, 173, 83);
+            case GRASSLAND -> Color.rgb(154, 199, 80);
+            case TEMPERATE_FOREST -> Color.rgb(84, 108, 47);
+            case TROPICAL_RAINFOREST -> Color.rgb(99, 197, 53);
             case DESERT -> Color.rgb(238, 218, 130);
-            case SAVANNA -> Color.rgb(177, 209, 110);
-            case MEDITERRANEAN -> Color.rgb(200, 200, 120);
+            case SAVANNA -> Color.rgb(155, 190, 82);
+            case MEDITERRANEAN -> Color.rgb(164, 189, 100);
             case MOUNTAIN -> Color.rgb(158, 158, 158);
         };
     }
