@@ -47,7 +47,7 @@ To run this project, you will need:
 
 1.  Clone this repository:
     ```bash
-    git clone [https://github.com/YOUR-USERNAME/YOUR-REPOSITORY.git](https://github.com/YOUR-USERNAME/YOUR-REPOSITORY.git)
+    git clone [https://github.com/hlibstrochkovskyi/world-simulator.git](https://github.com/hlibstrochkovskyi/world-simulator.git)
     ```
 2.  Open the project in your favorite Java IDE (e.g., IntelliJ IDEA, Eclipse, VS Code).
 3.  Configure your IDE to use the JavaFX SDK. You will likely need to add the SDK libraries to your project and set the necessary VM options. (See: [JavaFX Getting Started](https://openjfx.io/openjfx-docs/))
